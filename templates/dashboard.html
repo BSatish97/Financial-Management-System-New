@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Financial Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #48dbfb;
+            --danger: #ff6b6b;
+            --warning: #ffa502;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        .navbar {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-size: 24px;
+            font-weight: 700;
+            color: white !important;
+        }
+
+        .nav-link {
+            color: white !important;
+            margin: 0 10px;
+            font-weight: 500;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-link:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background-color: white;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover:after {
+            width: 100%;
+        }
+
+        /* Main Container */
+        .main-content {
+            padding: 30px 20px;
+        }
+
+        /* Cards */
+        .stat-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            border-left: 4px solid var(--primary);
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .stat-card.danger {
+            border-left-color: var(--danger);
+        }
+
+        .stat-card.success {
+            border-left-color: var(--success);
+        }
+
+        .stat-title {
+            font-size: 14px;
+            color: #666;
+            font-weight: 600;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .stat-card.danger .stat-value {
+            color: var(--danger);
+        }
+
+        .stat-card.success .stat-value {
+            color: var(--success);
+        }
+
+        .stat-icon {
+            font-size: 48px;
+            opacity: 0.1;
+            position: absolute;
+            right: 20px;
+            top: 20px;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            margin-bottom: 25px;
+            overflow: hidden;
+        }
+
+        .chat-header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            padding: 20px 25px;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+        }
+
+        .chat-header:hover {
+            opacity: 0.95;
+        }
+
+        .chat-box {
+            height: 350px;
+            overflow-y: auto;
+            padding: 20px;
+            background: #f9f9f9;
+            display: none;
+        }
+
+        .chat-box.show {
+            display: block;
+        }
+
+        .message {
+            margin-bottom: 15px;
+            padding: 12px 15px;
+            border-radius: 8px;
+            animation: slideIn 0.3s ease;
+            max-width: 80%;
+        }
+
+        .user-message {
+            background: var(--primary);
+            color: white;
+            margin-left: auto;
+            border-radius: 10px 10px 0 10px;
+        }
+
+        .bot-message {
+            background: #e9e9e9;
+            color: #333;
+            margin-right: auto;
+            border-radius: 10px 10px 10px 0;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .input-group-custom {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #e0e0e0;
+            display: none;
+        }
+
+        .input-group-custom.show {
+            display: flex;
+        }
+
+        .toggle-icon {
+            transition: transform 0.3s;
+        }
+
+        .toggle-icon.open {
+            transform: rotate(180deg);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .main-content {
+                padding: 15px 10px;
+            }
+
+            .nav-link {
+                margin: 5px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-wallet"></i> FinanceHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('add_expense') }}">
+                            <i class="fas fa-plus-circle"></i> Add Expense
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('view_transactions') }}">
+                            <i class="fas fa-list"></i> Transactions
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('upload_document') }}">
+                            <i class="fas fa-file-upload"></i> Upload Documents
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('expense_analysis') }}">
+                            <i class="fas fa-chart-bar"></i> Analytics
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('set_budget') }}">
+                            <i class="fas fa-calculator"></i> Budget
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <div class="container-lg">
+            <h1 class="mb-4" style="color: white; font-weight: 700;">
+                <i class="fas fa-chart-line"></i> Financial Dashboard
+            </h1>
+
+            <!-- Stats Row -->
+            <div class="row mb-4">
+                <div class="col-lg-6 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-title"><i class="fas fa-money-bill"></i> Total Expenses</div>
+                        <div class="stat-value">₹{{ "%.2f"|format(total_expense) }}</div>
+                        <small class="text-muted">This month</small>
+                        <i class="fas fa-wallet stat-icon"></i>
+                    </div>
+                </div>
+                <div class="col-lg-6 col-md-6">
+                    <div class="stat-card success">
+                        <div class="stat-title"><i class="fas fa-target"></i> Budget Limit</div>
+                        <div class="stat-value">₹{{ "%.2f"|format(budget) }}</div>
+                        <small class="text-muted">Your budget</small>
+                        <i class="fas fa-bullseye stat-icon"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chatbot Section -->
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="chat-container">
+                        <div class="chat-header" onclick="toggleChat()">
+                            <span><i class="fas fa-robot"></i> AI Financial Assistant</span>
+                            <i class="fas fa-chevron-down toggle-icon" id="toggle-icon"></i>
+                        </div>
+                        <div class="chat-box show" id="chat-box" style="display: block;">
+                            <div class="message bot-message">
+                                <i class="fas fa-robot"></i> Hello! I'm your financial assistant. How can I help you today?
+                            </div>
+                        </div>
+                        <div class="input-group-custom show" id="input-group-custom" style="display: flex;">
+                            <input type="text" id="user-input" class="form-control" placeholder="Ask me anything about your finances..." onkeypress="handleKeyPress(event)">
+                            <button class="btn btn-primary ms-2" onclick="sendMessage()" style="background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%); border: none;">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="col-lg-4">
+                    <div class="stat-card">
+                        <div class="stat-title"><i class="fas fa-tachometer-alt"></i> Quick Actions</div>
+                        <div class="list-group list-group-flush mt-3">
+                            <a href="{{ url_for('add_expense') }}" class="list-group-item list-group-item-action">
+                                <i class="fas fa-plus"></i> Add New Expense
+                            </a>
+                            <a href="{{ url_for('view_transactions') }}" class="list-group-item list-group-item-action">
+                                <i class="fas fa-eye"></i> View All Transactions
+                            </a>
+                            <a href="{{ url_for('upload_document') }}" class="list-group-item list-group-item-action">
+                                <i class="fas fa-upload"></i> Upload Document
+                            </a>
+                            <a href="{{ url_for('expense_analysis') }}" class="list-group-item list-group-item-action">
+                                <i class="fas fa-chart-pie"></i> View Analytics
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function sendMessage() {
+            var input = document.getElementById("user-input");
+            var message = input.value.trim();
+            if (message === "") return;
+
+            var chatBox = document.getElementById("chat-box");
+            var userMsg = document.createElement("div");
+            userMsg.className = "message user-message";
+            userMsg.textContent = message;
+            chatBox.appendChild(userMsg);
+
+            fetch("/chatbot", {
+                method: "POST",
+                body: JSON.stringify({ message: message }),
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                var botMsg = document.createElement("div");
+                botMsg.className = "message bot-message";
+                botMsg.innerHTML = '<i class="fas fa-robot"></i> ' + data.response;
+                chatBox.appendChild(botMsg);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            })
+            .catch(err => {
+                var errMsg = document.createElement("div");
+                errMsg.className = "message bot-message";
+                errMsg.innerHTML = '<i class="fas fa-robot"></i> Sorry, I encountered an error. Please try again.';
+                chatBox.appendChild(errMsg);
+            });
+
+            input.value = "";
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        }
+
+        function toggleChat() {
+            var chatBox = document.getElementById("chat-box");
+            var inputGroup = document.getElementById("input-group-custom");
+            var toggleIcon = document.getElementById("toggle-icon");
+
+            chatBox.classList.toggle("show");
+            inputGroup.classList.toggle("show");
+            toggleIcon.classList.toggle("open");
+        }
+
+        function speakText(text) {
+            if ('speechSynthesis' in window) {
+                var speech = new SpeechSynthesisUtterance(text);
+                speech.lang = "en-US";
+                speech.rate = 1;
+                speechSynthesis.speak(speech);
+            }
+        }
+    </script>
+</body>
+</html>

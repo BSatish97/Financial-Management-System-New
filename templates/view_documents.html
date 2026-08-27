@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Documents - Financial Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #667eea;
+            --secondary: #764ba2;
+            --success: #48dbfb;
+            --danger: #ff6b6b;
+            --warning: #ffa502;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-brand {
+            font-size: 24px;
+            font-weight: 700;
+            color: white !important;
+        }
+
+        .nav-link {
+            color: white !important;
+            margin: 0 10px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .nav-link:hover {
+            opacity: 0.8;
+            transform: translateY(-2px);
+        }
+
+        .main-content {
+            padding: 30px 20px;
+        }
+
+        .document-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s;
+            border-left: 4px solid var(--primary);
+        }
+
+        .document-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        }
+
+        .document-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .document-icon {
+            font-size: 32px;
+            color: var(--primary);
+            min-width: 45px;
+            text-align: center;
+        }
+
+        .document-info h5 {
+            margin: 0;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .document-info small {
+            color: #999;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .document-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn-action {
+            padding: 8px 15px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .btn-view {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-view:hover {
+            background: var(--secondary);
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-download {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-download:hover {
+            background: #2ecc71;
+            transform: translateY(-2px);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-delete {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-delete:hover {
+            background: #ee5a52;
+            transform: translateY(-2px);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            color: var(--primary);
+            opacity: 0.2;
+            margin-bottom: 20px;
+        }
+
+        .empty-state h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .btn-upload-new {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white !important;
+            padding: 12px 30px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 20px;
+            transition: all 0.3s;
+        }
+
+        .btn-upload-new:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .file-type-badge {
+            display: inline-block;
+            background: rgba(102, 126, 234, 0.1);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 10px;
+            text-transform: uppercase;
+        }
+
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+
+        @media (max-width: 768px) {
+            .document-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .document-actions {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-wallet"></i> FinanceHub
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('dashboard') }}"><i class="fas fa-home"></i> Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('view_transactions') }}"><i class="fas fa-list"></i> Transactions</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('upload_document') }}"><i class="fas fa-upload"></i> Upload</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-content">
+        <div class="container-lg">
+            <h1 class="mb-4" style="color: white; font-weight: 700;">
+                <i class="fas fa-file-archive"></i> Uploaded Documents
+            </h1>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade show">
+                            <i class="fas fa-info-circle"></i> {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            {% if documents %}
+                {% for doc in documents %}
+                    <div class="document-card">
+                        <div class="document-header">
+                            <div class="document-icon">
+                                {% if doc.file_type.lower() == 'pdf' %}
+                                    <i class="fas fa-file-pdf"></i>
+                                {% elif doc.file_type.lower() in ['doc', 'docx'] %}
+                                    <i class="fas fa-file-word"></i>
+                                {% elif doc.file_type.lower() in ['csv', 'xls', 'xlsx'] %}
+                                    <i class="fas fa-file-excel"></i>
+                                {% else %}
+                                    <i class="fas fa-file"></i>
+                                {% endif %}
+                            </div>
+                            <div class="document-info" style="flex-grow: 1;">
+                                <h5>
+                                    {{ doc.original_filename }}
+                                    <span class="file-type-badge">{{ doc.file_type.upper() }}</span>
+                                </h5>
+                                <small>
+                                    <i class="fas fa-calendar"></i> 
+                                    Uploaded on {{ doc.upload_date.strftime('%d %b %Y, %H:%M') }}
+                                </small>
+                                {% if doc.file_size %}
+                                    <small style="display: block;">
+                                        <i class="fas fa-database"></i> 
+                                        {{ "%.2f"|format(doc.file_size / 1024) }} KB
+                                    </small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="document-actions">
+                            <a href="{{ url_for('view_document_transactions', doc_id=doc.id) }}" class="btn-action btn-view">
+                                <i class="fas fa-eye"></i> View Transactions
+                            </a>
+                            <button class="btn-action btn-download" onclick="previewDocument({{ doc.id }}, '{{ doc.file_type }}')">
+                                <i class="fas fa-eye"></i> Preview
+                            </button>
+                            <button class="btn-action btn-delete" onclick="deleteDocument({{ doc.id }}, this)">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-file-upload"></i>
+                    </div>
+                    <h3>No Documents Uploaded</h3>
+                    <p>Start by uploading your transaction documents to extract and track your expenses automatically.</p>
+                    <a href="{{ url_for('upload_document') }}" class="btn-upload-new">
+                        <i class="fas fa-cloud-upload-alt"></i> Upload Your First Document
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function deleteDocument(docId, btn) {
+            if (!confirm('Are you sure you want to delete this document? This action cannot be undone.')) return;
+
+            try {
+                const response = await fetch('{{ url_for("delete_document", doc_id=0) }}'.replace('0', docId), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    // remove the card UI
+                    const card = btn.closest('.document-card');
+                    if (card) card.remove();
+                } else {
+                    alert(data.message || 'Failed to delete document');
+                }
+            } catch (err) {
+                alert('Error deleting document: ' + err);
+            }
+        }
+
+        function previewDocument(docId, fileType) {
+            const modalEl = document.getElementById('previewModal');
+            const modalTitle = document.getElementById('previewModalTitle');
+            const previewBody = document.getElementById('previewBody');
+
+            const previewable = ['pdf','csv','xlsx','xls'];
+            if (previewable.indexOf(fileType.toLowerCase()) === -1) {
+                modalTitle.textContent = 'Preview Not Available';
+                previewBody.innerHTML = '<p class="mb-3">This file type cannot be previewed inline. You can download it to view.</p><a href="{{ url_for("download_document", doc_id=0) }}" class="btn btn-primary" target="_blank">Download</a>'.replace('0', docId);
+                const modal = new bootstrap.Modal(modalEl);
+                modal.show();
+                return;
+            }
+
+            modalTitle.textContent = 'Document Preview';
+            previewBody.innerHTML = '<iframe src="" style="width:100%;height:70vh;border:none;" allowfullscreen></iframe>';
+            document.querySelector('#previewBody iframe').src = '{{ url_for("download_document", doc_id=0) }}'.replace('0', docId);
+            const modal = new bootstrap.Modal(modalEl);
+            modal.show();
+        }
+    </script>
+
+        <!-- Preview Modal -->
+        <div class="modal fade" id="previewModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="previewModalTitle">Preview</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="previewBody" style="min-height:60vh;">
+                        <iframe id="previewFrame" src="" style="width:100%;height:70vh;border:none;" allowfullscreen></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+</body>
+</html>

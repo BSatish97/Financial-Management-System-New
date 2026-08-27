@@ -1,0 +1,15 @@
+# Secrets
+.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Database
+database/*.db
+
+# User uploads
+static/uploads/
+
+# Generated audio
+static/audio/

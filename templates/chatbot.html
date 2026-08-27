@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Chatbot</title>
+    <style>
+        body { 
+            background-image: url("{{ url_for('static', filename='images/background.jpg') }}"); 
+            text-align: center; 
+            font-family: Arial, sans-serif; 
+            background-size: cover; 
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .container { 
+            margin-top: 50px; 
+            padding: 20px; 
+            background: white; 
+            border-radius: 10px; 
+            display: inline-block; 
+            width: 50%;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        }
+        .nav a { 
+            margin: 0 15px; 
+            text-decoration: none; 
+            color: black; 
+            font-size: 18px; 
+        }
+        .chat-box {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 10px;
+            text-align: left;
+            background: #f9f9f9;
+            scroll-behavior: smooth;
+            border-radius: 5px;
+        }
+        .input-box {
+            display: flex;
+            justify-content: center;
+        }
+        .input-box input {
+            width: 80%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .input-box button {
+            padding: 8px 15px;
+            margin-left: 5px;
+            border: none;
+            background: #007BFF;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .input-box button:hover {
+            background: #0056b3;
+        }
+        audio {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="nav">
+        <a href="{{ url_for('dashboard') }}">Dashboard</a> |
+        <a href="{{ url_for('add_expense') }}">Add Expense</a> |
+        <a href="{{ url_for('report') }}">Reports</a> |
+        <a href="{{ url_for('logout') }}">Logout</a>
+    </div>
+    
+    <div class="container">
+        <h2>Chatbot</h2>
+        <p>Ask me anything about your finances!</p>
+        
+        <div class="chat-box" id="chat-box">
+            <p><b>Bot:</b> Hello! How can I assist you today?</p>
+        </div>
+        
+        <div class="input-box">
+            <input type="text" id="user-input" placeholder="Type your message..." onkeypress="handleKeyPress(event)">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+
+        <audio id="chat-audio" controls></audio>
+    </div>
+
+    <script>
+        function escapeHTML(text) {
+            let element = document.createElement("div");
+            element.innerText = text;
+            return element.innerHTML;
+        }
+
+        function sendMessage() {
+            var input = document.getElementById("user-input");
+            var message = input.value.trim();
+            if (message === "") return;
+
+            var chatBox = document.getElementById("chat-box");
+
+            // Append user message
+            var userMessageElement = document.createElement("p");
+            userMessageElement.innerHTML = `<b>You:</b> ${escapeHTML(message)}`;
+            chatBox.appendChild(userMessageElement);
+
+            // Clear input field
+            input.value = "";
+
+            // Send request to Flask backend
+            fetch("/chatbot", {
+                method: "POST",
+                body: JSON.stringify({ message: message }),
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(response => response.json())
+            .then(data => {
+                var botResponse = data.response;
+                var audioUrl = data.audio_url;
+
+                // Append bot response
+                var botMessageElement = document.createElement("p");
+                botMessageElement.innerHTML = `<b>Bot:</b> ${escapeHTML(botResponse)}`;
+                chatBox.appendChild(botMessageElement);
+
+                // Auto-scroll to the latest message
+                chatBox.scrollTop = chatBox.scrollHeight;
+
+                // Play the received audio file
+                var chatAudio = document.getElementById("chat-audio");
+                chatAudio.src = audioUrl;
+                chatAudio.play();
+            })
+            .catch(error => {
+                console.error("Error:", error);
+            });
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        }
+    </script>
+</body>
+</html>

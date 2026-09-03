@@ -1,0 +1,9 @@
+Flask
+PyMySQL
+pandas
+joblib
+gTTS
+Werkzeug
+matplotlib
+seaborn
+gunicorn
